@@ -21,7 +21,7 @@ def get_all_optimizers():
     return optimizers
 
 ALL_OPTIMIZERS = get_all_optimizers()
-# You can override for temporarly testing a specific optimizer ALL_OPTIMIZERS = [TextGrad] # [OptoPrimeMulti]
+# You can override for temporarly testing a specific optimizer ALL_OPTIMIZERS = [TextGrad] # [OptoPrimeMulti] ALL_OPTIMIZERS = [OptoPrime]
 
 # Skip tests if no API credentials are available
 SKIP_REASON = "No API credentials found"

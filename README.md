@@ -401,6 +401,52 @@ see [example](https://community.openai.com/t/gpt-4o-doesnt-consistently-respect-
 - The system should not be used in highly regulated domains where inaccurate outputs could suggest actions that lead to
   injury or negatively impact an individual's legal, financial, or life opportunities.
 
+## Tests, Validation & Continuous Integration
+
+### Unit Tests  
+We maintain a comprehensive suite of core unit tests under `tests/unit_tests`. To run them locally:
+
+```bash
+pytest tests/unit_tests
+````
+
+> **Note:** We include 101 tests; `test_not_covered_usage_cases.py::test_nested_function_visibility` will be automatically skipped if [Graphviz](https://graphviz.org/) is not installed.
+
+Our CI pipeline (GitHub Actions, Azure Pipelines, etc.) will automatically execute this suite on each commit and pull request, ensuring that all basic functionality remains intact.
+
+---
+
+### Optimizer Validation
+
+For end-to-end validation of each optimizer against real LLMs, we provide additional integration tests:
+
+* **`tests/llm_optimizers_tests/test_optimizer.py`**
+  Runs through every built-in optimizer. Failures may occur if your local LLM setup differs from CI; by design, the CI job continues on any LLM-related errors.
+
+* **`tests/llm_optimizers_tests/test_optimizer_optoprimemulti.py`**
+  Focuses on the `OptoPrimeMulti` optimizer, exercising its various generation and selection strategies. Use this as a template when adding support for your own custom optimizer.
+
+* **`tests/llm_optimizers_tests/test_bbh_subset.py`**
+  Evaluates each optimizer on the first 10 examples of the BBH benchmark (subsampled). Feel free to adapt the sample size or benchmark targets to suit your own performance and coverage requirements.
+
+To run all optimizer tests locally (assuming you have configured your preferred LLM backend):
+
+```bash
+pytest tests/llm_optimizers_tests
+```
+
+---
+
+### Extending Tests for New Optimizers
+
+When adding a new optimizer:
+
+1. **Create a dedicated test file** under `tests/llm_optimizers_tests/`, following the patterns above.
+2. **Inherit common fixtures** for model configuration and feedback functions.
+3. **Document any special LLM requirements** (e.g., model name, API keys) at the top of your test module.
+4. **Ensure deterministic behavior** by fixing random seeds where possible.
+
+With these practices in place, both our core unit tests and higher-level optimizer validations will keep Trace robust and ready for contributions from the community.
 ## Contributing
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
@@ -414,6 +460,53 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Tests, Validation & Continuous Integration
+
+### Unit Tests  
+We maintain a comprehensive suite of core unit tests under `tests/unit_tests`. To run them locally:
+
+```bash
+pytest tests/unit_tests
+````
+
+> **Note:** We include 101 tests; `test_not_covered_usage_cases.py::test_nested_function_visibility` will be automatically skipped if [Graphviz](https://graphviz.org/) is not installed.
+
+Our CI pipeline (GitHub Actions, Azure Pipelines, etc.) will automatically execute this suite on each commit and pull request, ensuring that all basic functionality remains intact.
+
+---
+
+### Optimizer Validation
+
+For end-to-end validation of each optimizer against real LLMs, we provide additional integration tests:
+
+* **`tests/llm_optimizers_tests/test_optimizer.py`**
+  Runs through every built-in optimizer. Failures may occur if your local LLM setup differs from CI; by design, the CI job continues on any LLM-related errors.
+
+* **`tests/llm_optimizers_tests/test_optimizer_optoprimemulti.py`**
+  Focuses on the `OptoPrimeMulti` optimizer, exercising its various generation and selection strategies. Use this as a template when adding support for your own custom optimizer.
+
+* **`tests/llm_optimizers_tests/test_bbh_subset.py`**
+  Evaluates each optimizer on the first 10 examples of the BBH benchmark (subsampled). Feel free to adapt the sample size or benchmark targets to suit your own performance and coverage requirements.
+
+To run all optimizer tests locally (assuming you have configured your preferred LLM backend):
+
+```bash
+pytest tests/llm_optimizers_tests
+```
+
+---
+
+### Extending Tests for New Optimizers
+
+When adding a new optimizer:
+
+1. **Create a dedicated test file** under `tests/llm_optimizers_tests/`, following the patterns above.
+2. **Inherit common fixtures** for model configuration and feedback functions.
+3. **Document any special LLM requirements** (e.g., model name, API keys) at the top of your test module.
+4. **Ensure deterministic behavior** by fixing random seeds where possible.
+
+With these practices in place, both our core unit tests and higher-level optimizer validations will keep Trace robust and ready for contributions from the community.
 
 ## Trademarks
 
