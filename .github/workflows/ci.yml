@@ -1,0 +1,63 @@
+name: trace-ci
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest          # 2-core, 7 GB RAM :contentReference[oaicite:4]{index=4}
+    timeout-minutes: 45             # plenty for unit + mini-BBH
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # ---------- Ollama & model (cached) ----------
+    - name: Restore cached Qwen model
+      uses: actions/cache@v4
+      with:
+        path: ~/.ollama             # default model dir
+        key: qwen3-4b-gguf-v1
+
+    - name: Install Ollama
+      run: |
+        curl -fsSL https://ollama.com/install.sh | sh          # official script :contentReference[oaicite:5]{index=5}
+        sudo systemctl disable --now ollama || true            # we will run it manually
+
+    - name: Pull Qwen3-4B (if not cached)
+      run: |
+        if ! ollama list | grep -q "qwen3:4b"; then
+          ollama pull qwen3:4b                                  # model page :contentReference[oaicite:6]{index=6}
+        fi
+
+    - name: Start Ollama server
+      run: |
+        nohup ollama serve > /tmp/ollama.log 2>&1 &
+        sleep 25           # allow model to load into RAM (CPU) :contentReference[oaicite:7]{index=7}
+
+    # ---------- Python environment ----------
+    - uses: actions/setup-python@v5
+      with: {python-version: "3.10"}
+
+    - name: Install Trace & test deps
+      run: |
+        pip install -e .
+        pip install pytest datasets
+
+    # ---------- Environment variables so Trace sees local LLM ----------
+    - name: Configure LLM env
+      run: |
+        echo "OPENAI_API_KEY=ollama"             >> $GITHUB_ENV   # any non-empty value
+        echo "OPENAI_API_BASE=http://localhost:11434/v1" >> $GITHUB_ENV
+        echo "TRACE_LITELLM_MODEL=qwen3:4b"      >> $GITHUB_ENV   # Litellm will pass model name
+
+    # ---------- Run unit tests ----------
+    - name: Run fast unit tests
+      run: pytest -q tests/unit_tests
+
+    # ---------- Run BBH smoke test (one Q per optimizer) ----------
+    - name: Run BBH subset
+      run: pytest -q tests/test_bbh_subset.py
+
