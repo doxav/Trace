@@ -27,8 +27,8 @@ jobs:
       run: |
         curl -fsSL https://ollama.com/install.sh | sh
 
-    # 3) Drop-in override to bump context window to 32 768 tokens
-    - name: Configure Ollama for 32K context
+    # 3) Drop-in override to bump context window to 4k tokens
+    - name: Configure Ollama for 4K context
       run: |
         sudo mkdir -p /etc/systemd/system/ollama.service.d
         sudo tee /etc/systemd/system/ollama.service.d/override.conf << 'EOF'
